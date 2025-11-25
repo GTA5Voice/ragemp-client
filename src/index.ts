@@ -1,5 +1,4 @@
 import 'gta5voice/extensions/keys';
-import 'gta5voice/events';
 import { VoiceSettings } from 'gta5voice/models/voiceSettings';
 import { VoiceClient } from 'gta5voice/models/voiceClient';
 import { Translations } from 'gta5voice/translations';
