@@ -1,8 +1,8 @@
-## GTA5Voice Client Integration for [RAGE Multiplayer](https://rage.mp):
+## GTA5Voice Client Integration for [RAGE Multiplayer](https://rage.mp)
 For more information, visit our website: https://gta5voice.com<br>
 We are not in any way affiliated, associated, authorized, endorsed by, or connected with Rockstar Games or Take-Two Interactive.
 
-## Quick Setup:
+## Quick Setup
 1. Install the development dependencies:
 ```bash
 npm install --save-dev
