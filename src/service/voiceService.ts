@@ -26,28 +26,17 @@ export class VoiceService {
             this.allClients.push(client);
         }
 
-        const fallbackRange = typeof this.defaultVoiceRange === 'number' ? this.defaultVoiceRange : 0;
-        const currentVoiceRange =
-            typeof data?.voiceRange === 'number'
-                ? data.voiceRange
-                : typeof client.data?.voiceRange === 'number'
-                ? client.data.voiceRange
-                : fallbackRange;
-
         client.data = {
             teamspeakId: data?.teamspeakId ?? client.data.teamspeakId ?? null,
             websocketConnection: data?.websocketConnection ?? client.data.websocketConnection ?? false,
-            voiceRange: currentVoiceRange,
+            voiceRange: data?.voiceRange ?? this.defaultVoiceRange!,
         };
     }
 
     SetDefaultVoiceRange(range: number): void {
-        if (typeof range !== 'number' || Number.isNaN(range)) return;
+        if (Number.isNaN(range)) return;
         this.defaultVoiceRange = range;
-    }
-
-    GetDefaultVoiceRange(): number {
-        return typeof this.defaultVoiceRange === 'number' ? this.defaultVoiceRange : 0;
+        // TODO: Trigger event for developers, so they know a voice range is being set. (mp.events.call)
     }
 
     Remove(remoteId: number): void {
@@ -56,14 +45,5 @@ export class VoiceService {
 
     Get(remoteId: number): VoiceClientEntry | undefined {
         return this.allClients.find((c) => c.id === remoteId);
-    }
-
-    GetAll(): VoiceClientEntry[] {
-        return this.allClients;
-    }
-
-    GetData(remoteId: number): VoiceClientData | null {
-        const client = this.Get(remoteId);
-        return client ? client.data : null;
     }
 }

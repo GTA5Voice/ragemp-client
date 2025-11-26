@@ -9,6 +9,12 @@ let vc: VoiceClient | null = null;
 let t: Translations | null = null;
 const c = new Calculation();
 
+interface PluginData {
+    TeamspeakId: number | null
+    WebsocketConnection: boolean
+    CurrentVoiceRange: number
+}
+
 interface ClientData {
     RemoteId: number
     TeamspeakId: number | null
@@ -130,7 +136,7 @@ mp.events.add({
             });
         });
     },
-    'Client:GTA5Voice:UpdateClientData': (remoteId: number, pluginData: { TeamspeakId: number | null; WebsocketConnection: boolean; CurrentVoiceRange: number }) => {
+    'Client:GTA5Voice:UpdateClientData': (remoteId: number, pluginData: PluginData) => {
         c.voiceService.Set(remoteId, {
             teamspeakId: pluginData.TeamspeakId,
             websocketConnection: pluginData.WebsocketConnection,
@@ -151,7 +157,7 @@ mp.events.add({
 const updateConnectionState = (newState: boolean): void => {
     if (wsOpen === newState) return;
 
-    if (newState === true && vs) {
+    if (newState && vs) {
         executeWs('moveChannelAction', JSON.stringify(vs), newState);
     }
 

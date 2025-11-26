@@ -48,7 +48,6 @@ export class Calculation {
             const { x: lx, y: ly, z: lz } = this.localPlayer.position;
             const { x: sx, y: sy, z: sz } = s.position;
 
-            const fallbackRange = this.voiceService.GetDefaultVoiceRange();
             const playerVoiceRange = sData.voiceRange;
             if (getDistanceBetweenCoords(lx, ly, lz, sx, sy, sz, false) <= playerVoiceRange) {
                 playerData.set(s.remoteId, sData);
@@ -119,8 +118,6 @@ export class Calculation {
         const client = this.voiceService.Get(remoteId);
         const settings = client?.data;
         if (!settings) return null;
-
-        const fallbackRange = this.voiceService.GetDefaultVoiceRange();
 
         return {
             teamspeakId: settings.teamspeakId ?? null,
