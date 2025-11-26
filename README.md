@@ -3,8 +3,9 @@ For more information, visit our website: https://gta5voice.com<br>
 We are not in any way affiliated, associated, authorized, endorsed by, or connected with Rockstar Games or Take-Two Interactive.
 
 ## Quick setup
-1. Copy the **gta5voice** folder into your `client_packages` directory.
-2. Add the following line to your client_packages `index.js`:
+1. Download the latest [release](https://github.com/GTA5Voice/ragemp-client/releases) or [build the project](https://github.com/GTA5Voice/ragemp-client#manual-build-instructions) by yourself.
+2. Copy the **gta5voice** folder into your `client_packages` directory.
+3. Add the following line to your client_packages `index.js`:
 ```js
 require('gta5voice');
 ```
