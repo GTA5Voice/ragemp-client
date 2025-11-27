@@ -5,6 +5,7 @@
     "build": "tsup src/index.ts --out-dir build/gta5voice --format cjs --minify --clean --splitting false --target es2017 && node -e \"const fs=require('fs');const path=require('path');const src=path.resolve('browser');const dest=path.resolve('build','gta5voice','browser');fs.mkdirSync(dest,{recursive:true});fs.cpSync(src,dest,{recursive:true,force:true});\""
   },
   "devDependencies": {
+    "@ragempcommunity/types-cef": "^2.1.9",
     "@ragempcommunity/types-client": "^2.1.9",
     "tsup": "^8.0.1",
     "typescript": "^5.6.3"

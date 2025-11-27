@@ -13,6 +13,7 @@ export type PlayerVoiceData = {
     muffleIntensity: number;
     filter: FilterTypes;
     direction: string | null;
+    forceMuted: boolean;
 };
 
 export class Calculation {
@@ -48,7 +49,6 @@ export class Calculation {
             const { x: lx, y: ly, z: lz } = this.localPlayer.position;
             const { x: sx, y: sy, z: sz } = s.position;
 
-            const fallbackRange = this.voiceService.GetDefaultVoiceRange();
             const playerVoiceRange = sData.voiceRange;
             if (getDistanceBetweenCoords(lx, ly, lz, sx, sy, sz, false) <= playerVoiceRange) {
                 playerData.set(s.remoteId, sData);
@@ -120,8 +120,6 @@ export class Calculation {
         const settings = client?.data;
         if (!settings) return null;
 
-        const fallbackRange = this.voiceService.GetDefaultVoiceRange();
-
         return {
             teamspeakId: settings.teamspeakId ?? null,
             websocketConnection: settings.websocketConnection ?? false,
@@ -129,6 +127,7 @@ export class Calculation {
             muffleIntensity,
             filter,
             direction,
+            forceMuted: settings.forceMuted ?? false,
         };
     }
 }
