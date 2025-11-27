@@ -13,6 +13,7 @@ export type PlayerVoiceData = {
     muffleIntensity: number;
     filter: FilterTypes;
     direction: string | null;
+    forceMuted: boolean;
 };
 
 export class Calculation {
@@ -126,6 +127,7 @@ export class Calculation {
             muffleIntensity,
             filter,
             direction,
+            forceMuted: settings.forceMuted ?? false,
         };
     }
 }

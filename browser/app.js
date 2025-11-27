@@ -15,12 +15,14 @@ let voice = null;
 let wsAddress = null;
 let reconnectInterval = null;
 let teamspeakName = null;
+let serversTeamspeakUid = null;
 let lastHeartbeat = Date.now();
 let lostInterval;
 
-const connect = wsCheck((address, tsName) => {
+const connect = wsCheck((address, tsName, tsUid) => {
     wsAddress = address;
     teamspeakName = tsName;
+    serversTeamspeakUid = tsUid;
 
     if (voice != null) {
         return;
@@ -35,6 +37,7 @@ const connect = wsCheck((address, tsName) => {
         }
         mp.trigger("Client:GTA5Voice:onMessage", 'open', event.type);
         requestTeamspeakData();
+        sendTeamspeakInitData();
     };
     voice.onmessage = function (event) {
         mp.trigger("Client:GTA5Voice:onMessage", 'message', event.data);
@@ -117,6 +120,14 @@ const onServerConnectionLost = () => {
         action: "serverConnectionLost",
     }));
 };
+
+const sendTeamspeakInitData = wsCheck(() => {
+    if (!isConnected() || !serversTeamspeakUid) return;
+    voice.send(JSON.stringify({
+        action: "sendTeamspeakInitData",
+        uid: serversTeamspeakUid,
+    }))
+});
 
 const sendCalculationData = wsCheck((tickData) => {
     if (!isConnected()) return;

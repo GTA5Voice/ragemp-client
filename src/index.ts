@@ -13,6 +13,7 @@ interface PluginData {
     TeamspeakId: number | null
     WebsocketConnection: boolean
     CurrentVoiceRange: number
+    ForceMuted: boolean
 }
 
 interface ClientData {
@@ -20,6 +21,7 @@ interface ClientData {
     TeamspeakId: number | null
     WebsocketConnection: boolean
     CurrentVoiceRange: number
+    ForceMuted: boolean
 }
 
 // WebSocket browser initialization
@@ -71,7 +73,7 @@ mp.events.add({
         teamspeakName = tsName;
     },
     'Client:GTA5Voice:connect': () => {
-        executeWs('connect', '127.0.0.1:20264', teamspeakName);
+        executeWs('connect', '127.0.0.1:20264', teamspeakName, vs?.virtualServerUid);
     },
     'Client:GTA5Voice:onMessage': (type: string, message: unknown) => {
         switch (type) {
@@ -133,7 +135,12 @@ mp.events.add({
                 teamspeakId: data.TeamspeakId,
                 websocketConnection: data.WebsocketConnection,
                 voiceRange: data.CurrentVoiceRange,
+                forceMuted: data.ForceMuted,
             });
+
+            if (vc && data.RemoteId === localPlayer.remoteId && data.ForceMuted !== undefined) {
+                vc.setForceMuted(data.ForceMuted);
+            }
         });
     },
     'Client:GTA5Voice:UpdateClientData': (remoteId: number, pluginData: PluginData) => {
@@ -141,7 +148,12 @@ mp.events.add({
             teamspeakId: pluginData.TeamspeakId,
             websocketConnection: pluginData.WebsocketConnection,
             voiceRange: pluginData.CurrentVoiceRange,
+            forceMuted: pluginData.ForceMuted,
         });
+
+        if (vc && remoteId === localPlayer.remoteId && pluginData.ForceMuted !== undefined) {
+            vc.setForceMuted(pluginData.ForceMuted);
+        }
     },
     'Client:GTA5Voice:RemoveClient': (remoteId: number) => {
         c.voiceService.Remove(remoteId);

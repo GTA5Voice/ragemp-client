@@ -2,6 +2,7 @@ export interface VoiceClientData {
     teamspeakId: number | null;
     websocketConnection: boolean;
     voiceRange: number;
+    forceMuted: boolean;
 }
 
 interface VoiceClientEntry {
@@ -22,7 +23,7 @@ export class VoiceService {
         let client = this.allClients.find((c) => c.id === remoteId);
 
         if (!client) {
-            client = { id: remoteId, data: { teamspeakId: null, websocketConnection: false, voiceRange: 0 } };
+            client = { id: remoteId, data: { teamspeakId: null, websocketConnection: false, voiceRange: 0, forceMuted: false } };
             this.allClients.push(client);
         }
 
@@ -30,6 +31,7 @@ export class VoiceService {
             teamspeakId: data?.teamspeakId ?? client.data.teamspeakId ?? null,
             websocketConnection: data?.websocketConnection ?? client.data.websocketConnection ?? false,
             voiceRange: data?.voiceRange ?? this.defaultVoiceRange!,
+            forceMuted: data?.forceMuted ?? client.data.forceMuted ?? false,
         };
     }
 

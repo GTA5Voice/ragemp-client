@@ -3,12 +3,14 @@ export class VoiceClient {
     TeamspeakId: number | null;
     WebsocketConnection: boolean;
     CurrentVoiceRange: number;
+    ForceMuted: boolean;
 
     constructor(ingameId: number, websocketConnection: boolean, defaultVoiceRange: number) {
         this.IngameId = ingameId;
         this.TeamspeakId = null;
         this.WebsocketConnection = websocketConnection;
         this.CurrentVoiceRange = defaultVoiceRange;
+        this.ForceMuted = false;
     }
 
     setTeamspeakId(teamspeakId: number | null): void {
@@ -23,6 +25,11 @@ export class VoiceClient {
 
     setCurrentVoiceRange(voiceRange: number): void {
         this.CurrentVoiceRange = voiceRange;
+        this.teamspeakDataChanged();
+    }
+
+    setForceMuted(forceMuted: boolean): void {
+        this.ForceMuted = forceMuted;
         this.teamspeakDataChanged();
     }
 
