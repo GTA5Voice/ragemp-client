@@ -22,7 +22,7 @@ let lostInterval;
 const connect = wsCheck((address, tsName, tsUid) => {
     wsAddress = address;
     teamspeakName = tsName;
-    serversTeamspeakUid = tsUid;
+    serversTeamspeakUid = tsUid || serversTeamspeakUid;
 
     if (voice != null) {
         return;
@@ -48,7 +48,7 @@ const connect = wsCheck((address, tsName, tsUid) => {
 
         if (!reconnectInterval) {
             reconnectInterval = setInterval(() => {
-                connect([wsIdent, wsAddress, tsName]);
+                connect([wsIdent, wsAddress, tsName, serversTeamspeakUid]);
             }, 2000);
         }
     };
@@ -121,7 +121,7 @@ const onServerConnectionLost = () => {
     }));
 };
 
-const sendTeamspeakInitData = wsCheck(() => {
+const sendTeamspeakInitData = (() => {
     if (!isConnected() || !serversTeamspeakUid) return;
     voice.send(JSON.stringify({
         action: "sendTeamspeakInitData",
