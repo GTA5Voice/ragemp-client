@@ -69,7 +69,7 @@ mp.events.add({
         }, vs.calculationInterval);
         heartbeatInterval = setInterval(() => {
             executeWs('heartbeat');
-        }, 2500);
+        }, 1000);
         teamspeakName = tsName;
     },
     'Client:GTA5Voice:connect': () => {
