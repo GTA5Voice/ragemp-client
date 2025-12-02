@@ -2,6 +2,9 @@
 For more information, visit our website: https://gta5voice.com<br>
 We are not in any way affiliated, associated, authorized, endorsed by, or connected with Rockstar Games or Take-Two Interactive.
 
+## Documentation
+The documentation can be found here: https://docs.gta5voice.com
+
 ## Quick setup
 1. Download the latest [release](https://github.com/GTA5Voice/ragemp-client/releases) or [build the project](https://github.com/GTA5Voice/ragemp-client#manual-build-instructions) by yourself.
 2. Copy the **gta5voice** folder into your `client_packages` directory.
