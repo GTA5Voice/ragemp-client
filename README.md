@@ -5,6 +5,7 @@ We are not in any way affiliated, associated, authorized, endorsed by, or connec
 ## Links
 - The latest plugin version can be found here: https://gta5voice.com/downloads
 - The documentation can be found here: https://docs.gta5voice.com
+- Join our Discord for more information: https://gta5voice.com/discord
 
 ## Quick setup
 1. Download the latest [release](https://github.com/GTA5Voice/ragemp-client/releases) or [build the project](https://github.com/GTA5Voice/ragemp-client#manual-build-instructions) by yourself.
