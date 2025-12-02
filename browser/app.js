@@ -18,6 +18,7 @@ let teamspeakName = null;
 let serversTeamspeakUid = null;
 let lastHeartbeat = Date.now();
 let lostInterval;
+let serverConnectionLost = false;
 
 const connect = wsCheck((address, tsName, tsUid) => {
     wsAddress = address;
@@ -68,7 +69,7 @@ const playerDisconnected = wsCheck(() => {
 });
 
 const isConnected = () => {
-    return voice && voice.readyState === WebSocket.OPEN;
+    return voice && voice.readyState === WebSocket.OPEN && !serverConnectionLost;
 };
 
 const heartbeat = () => {
@@ -119,6 +120,7 @@ const onServerConnectionLost = () => {
     voice.send(JSON.stringify({
         action: "serverConnectionLost",
     }));
+    serverConnectionLost = true;
 };
 
 const sendTeamspeakInitData = (() => {

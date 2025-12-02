@@ -12,7 +12,7 @@ export type PlayerVoiceData = {
     voiceRange: number;
     muffleIntensity: number;
     filter: FilterTypes;
-    direction: string | null;
+    direction: Vector3 | null;
     forceMuted: boolean;
 };
 
@@ -90,23 +90,29 @@ export class Calculation {
         return intensity;
     }
 
-    private spatialize3D(mpPlayer: PlayerMp): string {
-        const toOther = new mp.Vector3(
-            mpPlayer.position.x - this.localPlayer.position.x,
-            mpPlayer.position.y - this.localPlayer.position.y,
-            mpPlayer.position.z - this.localPlayer.position.z,
+    private spatialize3D(mpPlayer: PlayerMp): Vector3 {
+        const selfPos = this.localPlayer.position;
+        const otherPos = mpPlayer.position;
+
+        const dir = otherPos.subtract(selfPos);
+        const distance = dir.length();
+
+        const heading = this.localPlayer.getRotation(0).z * Math.PI / 180;
+        const sin = Math.sin(heading);
+        const cos = Math.cos(heading);
+
+        const rotated = new mp.Vector3(
+            dir.x * cos + dir.y * sin,
+            -dir.x * sin + dir.y * cos,
+            dir.z
         );
 
-        const direction = toOther.unit();
-        const forward = this.localPlayer.getForwardVector();
-        const right = forward.cross(new mp.Vector3(0, 0, 1));
+        const leftRight = Math.max(-1, Math.min(1, rotated.x));
 
-        return toJson(
-            new mp.Vector3(
-                right.dot(direction),
-                forward.dot(direction),
-                0,
-            ),
+        return new mp.Vector3(
+            distance,
+            leftRight,
+            rotated.z
         );
     }
 
@@ -114,7 +120,7 @@ export class Calculation {
         remoteId: number,
         muffleIntensity: number,
         filter: FilterTypes,
-        direction: string | null,
+        direction: Vector3 | null,
     ): PlayerVoiceData | null {
         const client = this.voiceService.Get(remoteId);
         const settings = client?.data;
