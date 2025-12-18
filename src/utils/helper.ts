@@ -10,4 +10,12 @@ export class Helper {
         }
         return null;
     }
+
+    isAnyDoorOpen(vehicle: VehicleMp): boolean {
+        for (let i = 0; i < vehicle.getMaxNumberOfPassengers(); i++) {
+            if (vehicle.getDoorAngleRatio(i) > 0.0)
+                return true;
+        }
+        return false;
+    }
 }

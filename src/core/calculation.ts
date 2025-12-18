@@ -81,30 +81,25 @@ export class Calculation {
     private getMuffleIntensity(mpPlayer: PlayerMp): number {
         const pRoom = mp.game.interior.getRoomKeyFromEntity(this.localPlayer.handle);
         const sRoom = mp.game.interior.getRoomKeyFromEntity(mpPlayer.handle);
-        let intensity = 0; // default muffle value
+        let intensity = 0;
 
         const localInVehicle = this.localPlayer.vehicle;
         const otherInVehicle = mpPlayer.vehicle;
 
         if (localInVehicle || otherInVehicle) {
-            // both in same vehicle
             if (localInVehicle && otherInVehicle && localInVehicle === otherInVehicle) {
                 return intensity;
             }
 
             if (otherInVehicle && !localInVehicle) {
-                const seat = this.helper.getPlayerSeat(mpPlayer);
-                if (seat !== null) {
-                    const pDoorAngle = otherInVehicle.getDoorAngleRatio(seat);
-                    intensity = (1 - pDoorAngle) * 0.2; // muffle based on vehicle door state
+                if (!this.helper.isAnyDoorOpen(otherInVehicle)) {
+                    intensity = 0.2; // muffle based on vehicle door state
                 }
             }
 
             if (localInVehicle && !otherInVehicle) {
-                const seat = this.helper.getPlayerSeat(this.localPlayer);
-                if (seat !== null) {
-                    const pDoorAngle = localInVehicle.getDoorAngleRatio(seat);
-                    intensity = (1 - pDoorAngle) * 0.2; // muffle based on vehicle door state
+                if (!this.helper.isAnyDoorOpen(localInVehicle)) {
+                    intensity = 0.2; // muffle based on vehicle door state
                 }
             }
         } else {
