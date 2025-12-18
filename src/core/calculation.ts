@@ -2,9 +2,9 @@ import { RadioService } from 'gta5voice/service/radioService';
 import { VoiceService } from 'gta5voice/service/voiceService';
 import { PhoneService } from 'gta5voice/service/phoneService';
 import { FilterTypes } from 'gta5voice/models/enums/filter';
+import { Helper } from 'gta5voice/utils/helper';
 
 const getDistanceBetweenCoords = mp.game.gameplay.getDistanceBetweenCoords;
-const toJson = JSON.stringify;
 
 export type PlayerVoiceData = {
     teamspeakId: number | null;
@@ -21,11 +21,13 @@ export class Calculation {
     phoneService: PhoneService;
     radioService: RadioService;
     localPlayer: PlayerMp;
+    helper: Helper;
 
     constructor() {
         this.voiceService = new VoiceService();
         this.phoneService = new PhoneService();
         this.radioService = new RadioService();
+        this.helper = new Helper();
         this.localPlayer = mp.players.local;
     }
 
@@ -79,12 +81,40 @@ export class Calculation {
     private getMuffleIntensity(mpPlayer: PlayerMp): number {
         const pRoom = mp.game.interior.getRoomKeyFromEntity(this.localPlayer.handle);
         const sRoom = mp.game.interior.getRoomKeyFromEntity(mpPlayer.handle);
-        let intensity = 0;
+        let intensity = 0; // default muffle value
 
-        if (pRoom !== sRoom) intensity = 100;
+        const localInVehicle = this.localPlayer.vehicle;
+        const otherInVehicle = mpPlayer.vehicle;
 
-        if (this.localPlayer.hasClearLosTo(mpPlayer.handle, 17)) {
-            intensity *= 0.5; // -50% if line of sight is there
+        if (localInVehicle || otherInVehicle) {
+            // both in same vehicle
+            if (localInVehicle && otherInVehicle && localInVehicle === otherInVehicle) {
+                return intensity;
+            }
+
+            if (otherInVehicle && !localInVehicle) {
+                const seat = this.helper.getPlayerSeat(mpPlayer);
+                if (seat !== null) {
+                    const pDoorAngle = otherInVehicle.getDoorAngleRatio(seat);
+                    intensity = (1 - pDoorAngle) * 0.2; // muffle based on vehicle door state
+                }
+            }
+
+            if (localInVehicle && !otherInVehicle) {
+                const seat = this.helper.getPlayerSeat(this.localPlayer);
+                if (seat !== null) {
+                    const pDoorAngle = localInVehicle.getDoorAngleRatio(seat);
+                    intensity = (1 - pDoorAngle) * 0.2; // muffle based on vehicle door state
+                }
+            }
+        } else {
+            if (pRoom !== sRoom) {
+                intensity = 1; // full muffle if in different rooms
+            }
+
+            if (intensity > 0 && this.localPlayer.hasClearLosTo(mpPlayer.handle, 17)) {
+                intensity *= 0.5; // -50% if line of sight is there
+            }
         }
 
         return intensity;
