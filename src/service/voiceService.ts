@@ -3,6 +3,7 @@ export interface VoiceClientData {
     websocketConnection: boolean;
     voiceRange: number;
     forceMuted: boolean;
+    phoneSpeakerEnabled: boolean;
 }
 
 interface VoiceClientEntry {
@@ -23,7 +24,7 @@ export class VoiceService {
         let client = this.allClients.find((c) => c.id === remoteId);
 
         if (!client) {
-            client = { id: remoteId, data: { teamspeakId: null, websocketConnection: false, voiceRange: 0, forceMuted: false } };
+            client = { id: remoteId, data: { teamspeakId: null, websocketConnection: false, voiceRange: 0, forceMuted: false, phoneSpeakerEnabled: false } };
             this.allClients.push(client);
         }
 
@@ -32,6 +33,7 @@ export class VoiceService {
             websocketConnection: data?.websocketConnection ?? client.data.websocketConnection ?? false,
             voiceRange: data?.voiceRange ?? this.defaultVoiceRange!,
             forceMuted: data?.forceMuted ?? client.data.forceMuted ?? false,
+            phoneSpeakerEnabled: data?.phoneSpeakerEnabled ?? client.data.phoneSpeakerEnabled ?? false,
         };
     }
 

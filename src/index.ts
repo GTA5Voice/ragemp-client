@@ -14,6 +14,7 @@ interface PluginData {
     WebsocketConnection: boolean
     CurrentVoiceRange: number
     ForceMuted: boolean
+    PhoneSpeakerEnabled: boolean
 }
 
 interface ClientData {
@@ -22,6 +23,7 @@ interface ClientData {
     WebsocketConnection: boolean
     CurrentVoiceRange: number
     ForceMuted: boolean
+    PhoneSpeakerEnabled: boolean
 }
 
 // WebSocket browser initialization
@@ -136,10 +138,14 @@ mp.events.add({
                 websocketConnection: data.WebsocketConnection,
                 voiceRange: data.CurrentVoiceRange,
                 forceMuted: data.ForceMuted,
+                phoneSpeakerEnabled: data.PhoneSpeakerEnabled,
             });
 
             if (vc && data.RemoteId === localPlayer.remoteId && data.ForceMuted !== undefined) {
                 vc.setForceMuted(data.ForceMuted);
+            }
+            if (vc && data.RemoteId === localPlayer.remoteId && data.PhoneSpeakerEnabled !== undefined) {
+                vc.setPhoneSpeakerEnabled(data.PhoneSpeakerEnabled);
             }
         });
     },
@@ -149,10 +155,14 @@ mp.events.add({
             websocketConnection: pluginData.WebsocketConnection,
             voiceRange: pluginData.CurrentVoiceRange,
             forceMuted: pluginData.ForceMuted,
+            phoneSpeakerEnabled: pluginData.PhoneSpeakerEnabled,
         });
 
         if (vc && remoteId === localPlayer.remoteId && pluginData.ForceMuted !== undefined) {
             vc.setForceMuted(pluginData.ForceMuted);
+        }
+        if (vc && remoteId === localPlayer.remoteId && pluginData.PhoneSpeakerEnabled !== undefined) {
+            vc.setPhoneSpeakerEnabled(pluginData.PhoneSpeakerEnabled);
         }
     },
     'Client:GTA5Voice:RemoveClient': (remoteId: number) => {

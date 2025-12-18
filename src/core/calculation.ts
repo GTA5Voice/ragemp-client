@@ -14,6 +14,7 @@ export type PlayerVoiceData = {
     filter: FilterTypes;
     direction: Vector3 | null;
     forceMuted: boolean;
+    phoneSpeakerEnabled: boolean;
 };
 
 export class Calculation {
@@ -159,6 +160,7 @@ export class Calculation {
             filter,
             direction,
             forceMuted: settings.forceMuted ?? false,
+            phoneSpeakerEnabled: settings.phoneSpeakerEnabled ?? false,
         };
     }
 }
