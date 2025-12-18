@@ -2,9 +2,9 @@ import { RadioService } from 'gta5voice/service/radioService';
 import { VoiceService } from 'gta5voice/service/voiceService';
 import { PhoneService } from 'gta5voice/service/phoneService';
 import { FilterTypes } from 'gta5voice/models/enums/filter';
+import { Helper } from 'gta5voice/utils/helper';
 
 const getDistanceBetweenCoords = mp.game.gameplay.getDistanceBetweenCoords;
-const toJson = JSON.stringify;
 
 export type PlayerVoiceData = {
     teamspeakId: number | null;
@@ -14,6 +14,8 @@ export type PlayerVoiceData = {
     filter: FilterTypes;
     direction: Vector3 | null;
     forceMuted: boolean;
+    phoneSpeakerEnabled: boolean;
+    currentCallMembers: number[];
 };
 
 export class Calculation {
@@ -21,11 +23,13 @@ export class Calculation {
     phoneService: PhoneService;
     radioService: RadioService;
     localPlayer: PlayerMp;
+    helper: Helper;
 
     constructor() {
         this.voiceService = new VoiceService();
         this.phoneService = new PhoneService();
         this.radioService = new RadioService();
+        this.helper = new Helper();
         this.localPlayer = mp.players.local;
     }
 
@@ -34,6 +38,7 @@ export class Calculation {
         const phoneMembers = this.phoneService.currentCallMembers;
         const radioMembers = this.radioService.currentRadioMembers;
         const playerData = new Map<number, PlayerVoiceData>();
+        const speakerCallTargets = new Set<number>();
 
         streamedPlayers.forEach((s) => {
             if (!s || s.remoteId === this.localPlayer.remoteId) return;
@@ -52,6 +57,13 @@ export class Calculation {
             const playerVoiceRange = sData.voiceRange;
             if (getDistanceBetweenCoords(lx, ly, lz, sx, sy, sz, false) <= playerVoiceRange) {
                 playerData.set(s.remoteId, sData);
+            }
+
+            if (sData.phoneSpeakerEnabled && sData.currentCallMembers.length > 0) {
+                sData.currentCallMembers.forEach((memberId) => {
+                    if (memberId === this.localPlayer.remoteId || memberId === s.remoteId) return;
+                    speakerCallTargets.add(memberId);
+                });
             }
         });
 
@@ -73,6 +85,13 @@ export class Calculation {
             playerData.set(r, sData);
         });
 
+        speakerCallTargets.forEach((memberId) => {
+            if (playerData.has(memberId)) return;
+            const sData = this.buildSingleTeamspeakData(memberId, 0, FilterTypes.PHONE, null);
+            if (!sData || !sData.websocketConnection) return; // not in voice
+            playerData.set(memberId, sData);
+        });
+
         return playerData;
     }
 
@@ -81,10 +100,33 @@ export class Calculation {
         const sRoom = mp.game.interior.getRoomKeyFromEntity(mpPlayer.handle);
         let intensity = 0;
 
-        if (pRoom !== sRoom) intensity = 100;
+        const localInVehicle = this.localPlayer.vehicle;
+        const otherInVehicle = mpPlayer.vehicle;
 
-        if (this.localPlayer.hasClearLosTo(mpPlayer.handle, 17)) {
-            intensity *= 0.5; // -50% if line of sight is there
+        if (localInVehicle || otherInVehicle) {
+            if (localInVehicle && otherInVehicle && localInVehicle === otherInVehicle) {
+                return intensity;
+            }
+
+            if (otherInVehicle && !localInVehicle) {
+                if (!this.helper.isAnyDoorOpen(otherInVehicle)) {
+                    intensity = 0.2; // muffle based on vehicle door state
+                }
+            }
+
+            if (localInVehicle && !otherInVehicle) {
+                if (!this.helper.isAnyDoorOpen(localInVehicle)) {
+                    intensity = 0.2; // muffle based on vehicle door state
+                }
+            }
+        } else {
+            if (pRoom !== sRoom) {
+                intensity = 1; // full muffle if in different rooms
+            }
+
+            if (intensity > 0 && this.localPlayer.hasClearLosTo(mpPlayer.handle, 17)) {
+                intensity *= 0.5; // -50% if line of sight is there
+            }
         }
 
         return intensity;
@@ -134,6 +176,8 @@ export class Calculation {
             filter,
             direction,
             forceMuted: settings.forceMuted ?? false,
+            phoneSpeakerEnabled: settings.phoneSpeakerEnabled ?? false,
+            currentCallMembers: settings.currentCallMembers ?? [],
         };
     }
 }

@@ -3,6 +3,8 @@ export interface VoiceClientData {
     websocketConnection: boolean;
     voiceRange: number;
     forceMuted: boolean;
+    phoneSpeakerEnabled: boolean;
+    currentCallMembers: number[];
 }
 
 interface VoiceClientEntry {
@@ -23,7 +25,17 @@ export class VoiceService {
         let client = this.allClients.find((c) => c.id === remoteId);
 
         if (!client) {
-            client = { id: remoteId, data: { teamspeakId: null, websocketConnection: false, voiceRange: 0, forceMuted: false } };
+            client = {
+                id: remoteId,
+                data: {
+                    teamspeakId: null,
+                    websocketConnection: false,
+                    voiceRange: 0,
+                    forceMuted: false,
+                    phoneSpeakerEnabled: false,
+                    currentCallMembers: [],
+                },
+            };
             this.allClients.push(client);
         }
 
@@ -32,13 +44,15 @@ export class VoiceService {
             websocketConnection: data?.websocketConnection ?? client.data.websocketConnection ?? false,
             voiceRange: data?.voiceRange ?? this.defaultVoiceRange!,
             forceMuted: data?.forceMuted ?? client.data.forceMuted ?? false,
+            phoneSpeakerEnabled: data?.phoneSpeakerEnabled ?? client.data.phoneSpeakerEnabled ?? false,
+            currentCallMembers: data?.currentCallMembers ?? client.data.currentCallMembers ?? [],
         };
     }
 
     SetDefaultVoiceRange(range: number): void {
         if (Number.isNaN(range)) return;
         this.defaultVoiceRange = range;
-        // TODO: Trigger event for developers, so they know a voice range is being set. (mp.events.call)
+        mp.events.call('Client:GTA5Voice:OnVoiceRangeInitialized', range);
     }
 
     Remove(remoteId: number): void {
