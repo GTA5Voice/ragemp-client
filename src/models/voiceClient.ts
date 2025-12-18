@@ -5,6 +5,7 @@ export class VoiceClient {
     CurrentVoiceRange: number;
     ForceMuted: boolean;
     PhoneSpeakerEnabled: boolean;
+    CurrentCallMembers: number[];
 
     constructor(ingameId: number, websocketConnection: boolean, defaultVoiceRange: number) {
         this.IngameId = ingameId;
@@ -13,6 +14,7 @@ export class VoiceClient {
         this.CurrentVoiceRange = defaultVoiceRange;
         this.ForceMuted = false;
         this.PhoneSpeakerEnabled = false;
+        this.CurrentCallMembers = [];
     }
 
     setTeamspeakId(teamspeakId: number | null): void {
@@ -37,6 +39,11 @@ export class VoiceClient {
 
     setPhoneSpeakerEnabled(phoneSpeakerEnabled: boolean): void {
         this.PhoneSpeakerEnabled = phoneSpeakerEnabled;
+        this.teamspeakDataChanged();
+    }
+
+    setCurrentCallMembers(callMembers: number[]): void {
+        this.CurrentCallMembers = callMembers;
         this.teamspeakDataChanged();
     }
 

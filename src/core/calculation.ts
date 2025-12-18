@@ -15,6 +15,7 @@ export type PlayerVoiceData = {
     direction: Vector3 | null;
     forceMuted: boolean;
     phoneSpeakerEnabled: boolean;
+    currentCallMembers: number[];
 };
 
 export class Calculation {
@@ -37,6 +38,7 @@ export class Calculation {
         const phoneMembers = this.phoneService.currentCallMembers;
         const radioMembers = this.radioService.currentRadioMembers;
         const playerData = new Map<number, PlayerVoiceData>();
+        const speakerCallTargets = new Set<number>();
 
         streamedPlayers.forEach((s) => {
             if (!s || s.remoteId === this.localPlayer.remoteId) return;
@@ -56,6 +58,13 @@ export class Calculation {
             if (getDistanceBetweenCoords(lx, ly, lz, sx, sy, sz, false) <= playerVoiceRange) {
                 playerData.set(s.remoteId, sData);
             }
+
+            if (sData.phoneSpeakerEnabled && sData.currentCallMembers.length > 0) {
+                sData.currentCallMembers.forEach((memberId) => {
+                    if (memberId === this.localPlayer.remoteId || memberId === s.remoteId) return;
+                    speakerCallTargets.add(memberId);
+                });
+            }
         });
 
         phoneMembers.forEach((p) => {
@@ -74,6 +83,13 @@ export class Calculation {
             if (!sData || !sData.websocketConnection) return; // not in voice
 
             playerData.set(r, sData);
+        });
+
+        speakerCallTargets.forEach((memberId) => {
+            if (playerData.has(memberId)) return;
+            const sData = this.buildSingleTeamspeakData(memberId, 0, FilterTypes.PHONE, null);
+            if (!sData || !sData.websocketConnection) return; // not in voice
+            playerData.set(memberId, sData);
         });
 
         return playerData;
@@ -161,6 +177,7 @@ export class Calculation {
             direction,
             forceMuted: settings.forceMuted ?? false,
             phoneSpeakerEnabled: settings.phoneSpeakerEnabled ?? false,
+            currentCallMembers: settings.currentCallMembers ?? [],
         };
     }
 }
