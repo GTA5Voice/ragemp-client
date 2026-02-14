@@ -3,6 +3,7 @@ import { VoiceService } from 'gta5voice/service/voiceService';
 import { PhoneService } from 'gta5voice/service/phoneService';
 import { FilterTypes } from 'gta5voice/models/enums/filter';
 import { Helper } from 'gta5voice/utils/helper';
+import { VoiceSettings } from 'gta5voice/models/voiceSettings';
 
 const getDistanceBetweenCoords = mp.game.gameplay.getDistanceBetweenCoords;
 
@@ -10,6 +11,7 @@ export type PlayerVoiceData = {
     teamspeakId: number | null;
     websocketConnection: boolean;
     voiceRange: number;
+    volume: number;
     muffleIntensity: number;
     filter: FilterTypes;
     direction: Vector3 | null;
@@ -24,13 +26,19 @@ export class Calculation {
     radioService: RadioService;
     localPlayer: PlayerMp;
     helper: Helper;
+    enableDistanceBasedVolume: boolean;
+    volumeDecreaseMultiplier: number;
+    minimumVoiceVolume: number;
 
-    constructor() {
+    constructor(settings: VoiceSettings) {
         this.voiceService = new VoiceService();
         this.phoneService = new PhoneService();
         this.radioService = new RadioService();
         this.helper = new Helper();
         this.localPlayer = mp.players.local;
+        this.enableDistanceBasedVolume = settings.enableDistanceBasedVolume;
+        this.volumeDecreaseMultiplier = Number.isFinite(settings.volumeDecreaseMultiplier) ? settings.volumeDecreaseMultiplier : 1;
+        this.minimumVoiceVolume = Number.isFinite(settings.minimumVoiceVolume) ? settings.minimumVoiceVolume : 0;
     }
 
     calculatePlayersInRange(): Map<number, PlayerVoiceData> {
@@ -53,9 +61,13 @@ export class Calculation {
 
             const { x: lx, y: ly, z: lz } = this.localPlayer.position;
             const { x: sx, y: sy, z: sz } = s.position;
+            const distance = getDistanceBetweenCoords(lx, ly, lz, sx, sy, sz, false);
 
             const playerVoiceRange = sData.voiceRange;
-            if (getDistanceBetweenCoords(lx, ly, lz, sx, sy, sz, false) <= playerVoiceRange) {
+            if (distance <= playerVoiceRange) {
+                sData.volume = this.enableDistanceBasedVolume
+                    ? this.calculateDistanceVolume(distance)
+                    : 1;
                 playerData.set(s.remoteId, sData);
             }
 
@@ -172,6 +184,7 @@ export class Calculation {
             teamspeakId: settings.teamspeakId ?? null,
             websocketConnection: settings.websocketConnection ?? false,
             voiceRange: settings.voiceRange,
+            volume: 1,
             muffleIntensity,
             filter,
             direction,
@@ -179,5 +192,22 @@ export class Calculation {
             phoneSpeakerEnabled: settings.phoneSpeakerEnabled ?? false,
             currentCallMembers: settings.currentCallMembers ?? [],
         };
+    }
+
+    private calculateDistanceVolume(distance: number): number {
+        const safeMinimum = this.clamp(this.minimumVoiceVolume, 0, 1);
+        const safeMultiplier = Math.max(0, this.volumeDecreaseMultiplier);
+
+        if (distance <= 2.0) {
+            return 1;
+        }
+
+        const calculatedVolume = 1 - ((distance - 2.0) * safeMultiplier);
+
+        return this.clamp(calculatedVolume, safeMinimum, 1);
+    }
+
+    private clamp(value: number, min: number, max: number): number {
+        return Math.max(min, Math.min(max, value));
     }
 }

@@ -44,3 +44,4 @@ yarn-debug.log*
 dist/
 build/
 coverage/
+customer-extension*

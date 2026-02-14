@@ -7,7 +7,7 @@ import { Calculation } from 'gta5voice/core/calculation';
 let vs: VoiceSettings | null = null;
 let vc: VoiceClient | null = null;
 let t: Translations | null = null;
-const c = new Calculation();
+let c: Calculation | null = null;
 
 interface PluginData {
     TeamspeakId: number | null
@@ -64,10 +64,12 @@ function getAnimation(talking: boolean): { name: string; dictionary: string } {
 mp.events.add({
     'Client:GTA5Voice:initialize': (data: Record<string, string | number>, tsName: string) => {
         vs = new VoiceSettings(data);
+        c = new Calculation(vs);
         vc = new VoiceClient(localPlayer.remoteId, wsOpen, vs.voiceRanges[0]);
         c.voiceService.SetDefaultVoiceRange(vs.voiceRanges[0]);
         t = new Translations(vs.language);
         calculationInterval = setInterval(() => {
+            if (!c) return;
             const playersInRange = c.calculatePlayersInRange();
             executeWs('sendCalculationData', JSON.stringify(Array.from(playersInRange.values())));
         }, vs.calculationInterval);
@@ -135,7 +137,7 @@ mp.events.add({
     'Client:GTA5Voice:LoadClientData': (clientData: string | Array<Record<string, number>>) => {
         const parsedData = typeof clientData === 'string' ? JSON.parse(clientData) : clientData;
         parsedData.forEach((data: ClientData) => {
-            c.voiceService.Set(data.RemoteId, {
+            c!.voiceService.Set(data.RemoteId, {
                 teamspeakId: data.TeamspeakId,
                 websocketConnection: data.WebsocketConnection,
                 voiceRange: data.CurrentVoiceRange,
@@ -156,6 +158,7 @@ mp.events.add({
         });
     },
     'Client:GTA5Voice:UpdateClientData': (remoteId: number, pluginData: PluginData) => {
+        if (!c) return;
         c.voiceService.Set(remoteId, {
             teamspeakId: pluginData.TeamspeakId,
             websocketConnection: pluginData.WebsocketConnection,
@@ -176,6 +179,7 @@ mp.events.add({
         }
     },
     'Client:GTA5Voice:RemoveClient': (remoteId: number) => {
+        if (!c) return;
         c.voiceService.Remove(remoteId);
     },
     'Client:GTA5Voice:EnterRadio': () => {
